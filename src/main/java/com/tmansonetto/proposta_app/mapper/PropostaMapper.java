@@ -5,9 +5,12 @@ import com.tmansonetto.proposta_app.dto.PropostaResponseDTO;
 import com.tmansonetto.proposta_app.entity.Proposta;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface PropostaMapper {
+
+    PropostaMapper INSTANCE = Mappers.getMapper(PropostaMapper.class);
 
     @Mapping(target = "usuario.nome", source = "nome")
     @Mapping(target = "usuario.sobrenome", source = "sobrenome")

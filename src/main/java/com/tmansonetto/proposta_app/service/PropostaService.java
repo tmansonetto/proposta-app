@@ -17,6 +17,7 @@ public class PropostaService {
     private PropostaMapper propostaMapper;
 
     public PropostaResponseDTO criar(PropostaRequestDTO propostaRequestDTO) {
+
         Proposta proposta = propostaMapper.convertDtoToProposta(propostaRequestDTO);
         propostaRepository.save(proposta);
         return propostaMapper.convertEntityToDto(proposta);
