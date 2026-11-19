@@ -1,6 +1,7 @@
 package com.tmansonetto.proposta_app.mapper;
 
 import com.tmansonetto.proposta_app.dto.PropostaRequestDTO;
+import com.tmansonetto.proposta_app.dto.PropostaResponseDTO;
 import com.tmansonetto.proposta_app.entity.Proposta;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,4 +21,12 @@ public interface PropostaMapper {
     @Mapping(target = "integrada", ignore = true)
     @Mapping(target = "observacao", ignore = true)
     Proposta convertDtoToProposta(PropostaRequestDTO propostaRequestDTO);
+
+    @Mapping(target = "nome", source = "usuario.nome")
+    @Mapping(target = "sobrenome", source = "usuario.sobrenome")
+    @Mapping(target = "cpf", source = "usuario.cpf")
+    @Mapping(target = "telefone", source = "usuario.telefone")
+    @Mapping(target = "renda", source = "usuario.renda")
+    PropostaResponseDTO convertEntityToDto(Proposta proposta);
+
 }
