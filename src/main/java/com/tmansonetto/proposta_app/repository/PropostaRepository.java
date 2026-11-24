@@ -4,6 +4,8 @@ import com.tmansonetto.proposta_app.entity.Proposta;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Repositório de acesso ao banco de dados para a entidade {@link Proposta}.
  *
@@ -20,4 +22,6 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface PropostaRepository extends CrudRepository<Proposta, Long > {
+    List<Proposta> findAllByIntegradaIsFalse();
+
 }

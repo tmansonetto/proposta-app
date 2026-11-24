@@ -62,7 +62,7 @@ public interface PropostaMapper {
     @Mapping(target = "usuario.proposta", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "aprovado", ignore = true)
-    @Mapping(target = "integrada", ignore = true)
+    @Mapping(target = "integrada", constant = "true")
     @Mapping(target = "observacao", ignore = true)
     Proposta convertDtoToProposta(PropostaRequestDTO propostaRequestDTO);
 
