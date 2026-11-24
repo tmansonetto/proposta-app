@@ -6,6 +6,7 @@ import com.tmansonetto.proposta_app.entity.Proposta;
 import com.tmansonetto.proposta_app.mapper.PropostaMapper;
 import com.tmansonetto.proposta_app.repository.PropostaRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,6 +37,9 @@ public class PropostaService {
     /** Conversor entre DTOs e entidades (implementação gerada pelo MapStruct). */
     private PropostaMapper propostaMapper;
 
+    private NotificacaoSerive notificacaoSerive;
+    private RabbitTemplate rabbitTemplate;
+
     /**
      * Cria e salva uma nova proposta.
      *
@@ -55,7 +59,11 @@ public class PropostaService {
 
         Proposta proposta = propostaMapper.convertDtoToProposta(propostaRequestDTO);
         propostaRepository.save(proposta);
-        return propostaMapper.convertEntityToDto(proposta);
+
+        PropostaResponseDTO propostaResponseDTO = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
+        notificacaoSerive.notificar(propostaResponseDTO,"proposta-pendente.ex");
+
+        return propostaResponseDTO;
     }
 
     /**

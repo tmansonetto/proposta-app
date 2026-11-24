@@ -9,6 +9,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Mapper responsável por converter objetos entre DTOs e entidades.
@@ -56,6 +57,7 @@ public interface PropostaMapper {
     @Mapping(target = "usuario.cpf", source = "cpf")
     @Mapping(target = "usuario.telefone", source = "telefone")
     @Mapping(target = "usuario.renda", source = "renda")
+    @Mapping(target = "valorSolicitado", source = "valorSolicitadoFmt")
     @Mapping(target = "usuario.id", ignore = true)
     @Mapping(target = "usuario.proposta", ignore = true)
     @Mapping(target = "id", ignore = true)
@@ -97,7 +99,10 @@ public interface PropostaMapper {
     List<PropostaResponseDTO> convertListEntityToListDto(Iterable<Proposta> propostas);
 
     default String formatarValorSolicitado(Proposta proposta) {
-        return NumberFormat.getCurrencyInstance().format(proposta.getValorSolicitado());
+        if (proposta.getValorSolicitado() == null) {
+            return null;
+        }
+        return NumberFormat.getCurrencyInstance(Locale.of("pt", "BR")).format(proposta.getValorSolicitado());
     }
 
 }
