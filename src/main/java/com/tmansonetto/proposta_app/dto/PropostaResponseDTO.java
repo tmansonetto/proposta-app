@@ -37,7 +37,7 @@ public class PropostaResponseDTO {
     /** Renda mensal do solicitante. */
     private Double renda;
     /** Valor de empréstimo solicitado. */
-    private Double valorSolicitado;
+    private String valorSolicitado;
     /** Prazo de pagamento (quantidade de parcelas/meses). */
     private int prazoPagamento;
     /** Resultado da análise: {@code true} aprovada, {@code false} reprovada, {@code null} ainda não analisada. */
