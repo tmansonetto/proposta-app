@@ -74,10 +74,21 @@ public class PropostaService {
         Proposta proposta = propostaMapper.convertDtoToProposta(propostaRequestDTO);
         propostaRepository.save(proposta);
 
-        PropostaResponseDTO propostaResponseDTO = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
-        notificacaoSerive.notificar(propostaResponseDTO,exchage);
+       // PropostaResponseDTO propostaResponseDTO = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
+        notificarRabbitMq(proposta);
+        notificacaoSerive.notificar(proposta,exchage);
 
-        return propostaResponseDTO;
+      //  return propostaResponseDTO;
+        return PropostaMapper.INSTANCE.convertEntityToDto(proposta);
+    }
+
+    private void notificarRabbitMq(Proposta proposta) {
+        try {
+            notificacaoSerive.notificar(proposta, exchage);
+        }catch (RuntimeException e){
+            proposta.setIntegrada(false);
+            propostaRepository.save(proposta);
+        }
     }
 
     /**
@@ -92,4 +103,7 @@ public class PropostaService {
         return propostaMapper.convertListEntityToListDto(propostaRepository.findAll());
 
     }
+
+
+
 }
