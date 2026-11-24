@@ -7,6 +7,7 @@ import com.tmansonetto.proposta_app.mapper.PropostaMapper;
 import com.tmansonetto.proposta_app.repository.PropostaRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.List;
  * (Lombok) gera um construtor com todos os atributos, que o Spring usa para injetar
  * automaticamente o repositório e o mapper (injeção de dependência via construtor).
  */
-@AllArgsConstructor
+
 @Service
 public class PropostaService {
 
@@ -39,6 +40,19 @@ public class PropostaService {
 
     private NotificacaoSerive notificacaoSerive;
     private RabbitTemplate rabbitTemplate;
+    
+
+    private String exchage;
+
+    public PropostaService(PropostaRepository propostaRepository, PropostaMapper propostaMapper,
+                           NotificacaoSerive notificacaoSerive, RabbitTemplate rabbitTemplate,
+                           @Value("${rabbitmq.propostapendente.exchange}") String exchage) {
+        this.propostaRepository = propostaRepository;
+        this.propostaMapper = propostaMapper;
+        this.notificacaoSerive = notificacaoSerive;
+        this.rabbitTemplate = rabbitTemplate;
+        this.exchage = exchage;
+    }
 
     /**
      * Cria e salva uma nova proposta.
@@ -61,7 +75,7 @@ public class PropostaService {
         propostaRepository.save(proposta);
 
         PropostaResponseDTO propostaResponseDTO = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
-        notificacaoSerive.notificar(propostaResponseDTO,"proposta-pendente.ex");
+        notificacaoSerive.notificar(propostaResponseDTO,exchage);
 
         return propostaResponseDTO;
     }
