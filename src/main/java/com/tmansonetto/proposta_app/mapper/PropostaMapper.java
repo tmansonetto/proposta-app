@@ -46,8 +46,12 @@ public interface PropostaMapper {
      *
      * <p>Os campos marcados com {@code ignore = true} não existem no DTO de entrada e
      * devem ser definidos pelo sistema, não pelo cliente: os {@code id} (gerados pelo banco),
-     * {@code aprovado}, {@code integrada}, {@code observacao} e o vínculo inverso
-     * {@code usuario.proposta}. Ignorá-los explicitamente evita avisos de "campo não mapeado".
+     * {@code aprovado}, {@code observacao} e o vínculo inverso {@code usuario.proposta}.
+     * Ignorá-los explicitamente evita avisos de "campo não mapeado".
+     *
+     * <p>{@code constant = "true"} preenche {@code integrada} com um valor fixo. Esse valor é
+     * provisório: logo depois, o {@code PropostaService} tenta enviar a proposta ao RabbitMQ
+     * e grava o resultado real ({@code true} ou {@code false}).
      *
      * @param propostaRequestDTO dados recebidos na requisição
      * @return nova entidade {@code Proposta} (ainda não salva no banco) com seu {@code Usuario}
@@ -74,6 +78,14 @@ public interface PropostaMapper {
      * de mesmo nome ({@code id}, {@code prazoPagamento}, {@code observacao}...) são copiados
      * automaticamente.
      *
+     * <p>Dois casos especiais:
+     * <ul>
+     *   <li>{@code expression = "java(...)"} permite escrever um trecho de código Java que o
+     *       MapStruct copia para a classe gerada. Aqui ele chama {@link #formatarValorSolicitado(Proposta)};</li>
+     *   <li>{@code aprovado} (entidade) → {@code aprovada} (DTO): os nomes são diferentes,
+     *       por isso precisam ser ligados manualmente.</li>
+     * </ul>
+     *
      * @param proposta entidade vinda do banco de dados
      * @return DTO pronto para ser devolvido ao cliente em JSON
      */
@@ -98,6 +110,19 @@ public interface PropostaMapper {
      */
     List<PropostaResponseDTO> convertListEntityToListDto(Iterable<Proposta> propostas);
 
+    /**
+     * Formata o valor solicitado como moeda brasileira (ex.: {@code 15000.5} → {@code "R$ 15.000,50"}).
+     *
+     * <p>Métodos {@code default} são métodos de interface que já vêm com implementação.
+     * O MapStruct não gera código para eles; apenas os usa quando necessário.
+     *
+     * <p>{@code NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"))} cria um formatador
+     * que segue as regras do Brasil: símbolo {@code R$}, ponto para milhar e vírgula para decimais.
+     * O {@code if} inicial evita um {@code NullPointerException} quando o valor não foi informado.
+     *
+     * @param proposta proposta cujo valor será formatado
+     * @return valor formatado, ou {@code null} se a proposta não tiver valor
+     */
     default String formatarValorSolicitado(Proposta proposta) {
         if (proposta.getValorSolicitado() == null) {
             return null;

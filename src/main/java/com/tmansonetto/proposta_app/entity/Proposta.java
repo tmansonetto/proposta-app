@@ -47,7 +47,12 @@ public class Proposta {
     private int prazoPagamento;
     /** Resultado da análise: {@code true} aprovada, {@code false} reprovada, {@code null} ainda não analisada. */
     private Boolean aprovado;
-    /** Indica se a proposta já foi integrada/enviada a outro sistema (controle interno). */
+    /**
+     * Indica se a proposta já foi enviada com sucesso ao RabbitMQ (controle interno).
+     * Quando fica {@code false} (ex.: RabbitMQ fora do ar), o agendador
+     * {@code PropostaSemIntegracao} tenta enviá-la novamente mais tarde.
+     * Por ser um {@code boolean} primitivo, o Lombok gera o getter como {@code isIntegrada()}.
+     */
     private boolean integrada;
     /** Observação/justificativa sobre o resultado da análise. */
     private String observacao;

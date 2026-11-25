@@ -17,6 +17,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  *       e registrá-las como componentes gerenciados (beans).</li>
  * </ul>
  * Por isso esta classe fica no pacote "raiz": todos os outros pacotes estão abaixo dela.
+ *
+ * <p>{@code @EnableScheduling} liga o agendador de tarefas do Spring. Sem ela, os métodos
+ * anotados com {@code @Scheduled} (como em {@code PropostaSemIntegracao}) nunca seriam executados.
  */
 @SpringBootApplication
 @EnableScheduling

@@ -22,9 +22,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+/**
+ * Testes unitários do {@link PropostaService}.
+ *
+ * <p>O repositório e o serviço de notificação são <b>mocks</b> (objetos falsos criados pelo
+ * Mockito), então os testes rodam sem banco de dados e sem RabbitMQ. O mapper, por outro lado,
+ * é o real ({@code PropostaMapper.INSTANCE}), pois ele não depende de nada externo.
+ *
+ * <p>O objetivo é verificar a regra de resiliência: se o envio ao RabbitMQ falhar, a proposta
+ * deve ficar salva com {@code integrada = false}, sem devolver erro ao cliente.
+ */
 @ExtendWith(MockitoExtension.class)
 class PropostaServiceTest {
 
+    /** Nome de exchange usado em todos os testes. */
     private static final String EXCHANGE = "proposta-pendente.ex";
 
     @Mock
@@ -33,14 +44,17 @@ class PropostaServiceTest {
     @Mock
     private NotificacaoRabbitService notificacaoRabbitService;
 
+    /** Classe sendo testada, criada manualmente com as dependências falsas. */
     private PropostaService propostaService;
 
+    /** {@code @BeforeEach}: executado antes de cada teste, garantindo um serviço "limpo" para cada um. */
     @BeforeEach
     void setUp() {
         propostaService = new PropostaService(propostaRepository, PropostaMapper.INSTANCE,
                 notificacaoRabbitService, EXCHANGE);
     }
 
+    /** Monta uma requisição de exemplo com todos os campos preenchidos. */
     private PropostaRequestDTO requisicao() {
         PropostaRequestDTO dto = new PropostaRequestDTO();
         dto.setNome("Maria");
@@ -53,12 +67,24 @@ class PropostaServiceTest {
         return dto;
     }
 
+    /**
+     * Retorna o valor de {@code integrada} de cada proposta passada ao {@code save()}, na ordem.
+     *
+     * <p>O {@link ArgumentCaptor} "captura" os argumentos recebidos pelo mock, permitindo
+     * inspecioná-los depois. Como o serviço chama {@code save()} mais de uma vez, os testes
+     * olham o <b>último</b> valor salvo, que é o estado final da proposta.
+     */
     private List<Boolean> valoresDeIntegradaSalvos() {
         ArgumentCaptor<Proposta> captor = ArgumentCaptor.forClass(Proposta.class);
         verify(propostaRepository, atLeastOnce()).save(captor.capture());
         return captor.getAllValues().stream().map(Proposta::isIntegrada).toList();
     }
 
+    /**
+     * Cenário: RabbitMQ fora do ar (conexão recusada).
+     * Esperado: nenhuma exceção chega ao cliente, a proposta fica com {@code integrada = false}
+     * e houve exatamente uma tentativa de envio.
+     */
     @Test
     void rabbitOffline_propostaFicaComIntegradaFalse_eNaoLancaErro() {
         doThrow(new AmqpConnectException(new ConnectException("Connection refused")))
@@ -71,6 +97,10 @@ class PropostaServiceTest {
         verify(notificacaoRabbitService, times(1)).notificar(any(), eq(EXCHANGE));
     }
 
+    /**
+     * Cenário: outro erro qualquer ao publicar (ex.: broker recusou a mensagem).
+     * Esperado: o mesmo comportamento do RabbitMQ offline.
+     */
     @Test
     void erroGenericoNaIntegracao_propostaFicaComIntegradaFalse() {
         doThrow(new AmqpException("erro ao publicar"))
@@ -82,6 +112,10 @@ class PropostaServiceTest {
         assertThat(salvos.get(salvos.size() - 1)).isFalse();
     }
 
+    /**
+     * Cenário: RabbitMQ funcionando (o mock não lança exceção).
+     * Esperado: a proposta fica com {@code integrada = true} e é enviada uma única vez.
+     */
     @Test
     void rabbitOnline_propostaFicaComIntegradaTrue_eEnviaUmaUnicaVez() {
         propostaService.criar(requisicao());

@@ -22,6 +22,17 @@ import java.util.List;
  */
 @Repository
 public interface PropostaRepository extends CrudRepository<Proposta, Long > {
+    /**
+     * Busca todas as propostas que ainda não foram enviadas ao RabbitMQ.
+     *
+     * <p>Não escrevemos SQL aqui: o Spring Data lê o <b>nome do método</b> e monta a consulta
+     * sozinho (são os chamados <i>query methods</i>). Lendo por partes:
+     * {@code findAll} (buscar todas) + {@code By} (onde) + {@code Integrada} (o atributo)
+     * + {@code IsFalse} (é falso). O resultado equivale a
+     * {@code SELECT * FROM proposta WHERE integrada = false}.
+     *
+     * @return propostas pendentes de integração (lista vazia se não houver)
+     */
     List<Proposta> findAllByIntegradaIsFalse();
 
 }

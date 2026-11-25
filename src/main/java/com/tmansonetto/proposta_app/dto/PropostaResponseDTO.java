@@ -36,7 +36,11 @@ public class PropostaResponseDTO {
     private String cpf;
     /** Renda mensal do solicitante. */
     private Double renda;
-    /** Valor de empréstimo solicitado. */
+    /**
+     * Valor de empréstimo solicitado, já <b>formatado</b> como moeda brasileira (ex.: {@code "R$ 10.000,00"}).
+     * É um {@code String} (e não um número) porque serve apenas para exibição no front-end.
+     * A formatação é feita no {@code PropostaMapper}.
+     */
     private String valorSolicitadoFmt;
     /** Prazo de pagamento (quantidade de parcelas/meses). */
     private int prazoPagamento;

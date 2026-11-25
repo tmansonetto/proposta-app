@@ -23,9 +23,11 @@ import java.util.List;
  * O serviço usa o {@link PropostaMapper} para converter entre DTOs e entidades,
  * de modo que o controller nunca manipula entidades diretamente.
  *
- * <p>{@code @Service} registra a classe como bean do Spring. {@code @AllArgsConstructor}
- * (Lombok) gera um construtor com todos os atributos, que o Spring usa para injetar
- * automaticamente o repositório e o mapper (injeção de dependência via construtor).
+ * <p>Depois de salvar, o serviço também publica a proposta no RabbitMQ, para que outros
+ * microsserviços (análise de crédito e notificação) sejam avisados.
+ *
+ * <p>{@code @Service} registra a classe como bean do Spring. O construtor recebe todas as
+ * dependências, e o Spring as injeta automaticamente (injeção de dependência via construtor).
  */
 
 @Service
@@ -40,8 +42,20 @@ public class PropostaService {
     /** Publica as propostas no RabbitMQ. */
     private NotificacaoRabbitService notificacaoRabbitService;
 
+    /** Nome da exchange do RabbitMQ para onde as propostas são enviadas. */
     private String exchage;
 
+    /**
+     * Construtor usado pelo Spring para injetar as dependências.
+     *
+     * <p>Não foi usado o {@code @AllArgsConstructor} do Lombok porque o parâmetro {@code exchage}
+     * precisa da anotação {@code @Value}, que lê o nome da exchange do {@code application.properties}.
+     *
+     * @param propostaRepository       repositório de propostas
+     * @param propostaMapper           conversor entre DTOs e entidades
+     * @param notificacaoRabbitService serviço de publicação no RabbitMQ
+     * @param exchage                  nome da exchange lido da configuração
+     */
     public PropostaService(PropostaRepository propostaRepository, PropostaMapper propostaMapper,
                            NotificacaoRabbitService notificacaoRabbitService,
                            @Value("${rabbitmq.propostapendente.exchange}") String exchage) {
@@ -60,6 +74,7 @@ public class PropostaService {
      *   <li>salva no banco com {@code save()}. Graças ao {@code CascadeType.PERSIST},
      *       o usuário é salvo junto. Após salvar, o JPA preenche o {@code id} gerado
      *       no próprio objeto {@code proposta};</li>
+     *   <li>envia a proposta ao RabbitMQ (ver o método {@code notificarRabbitMq});</li>
      *   <li>converte a entidade (agora com {@code id}) no DTO de resposta.</li>
      * </ol>
      *
@@ -82,6 +97,10 @@ public class PropostaService {
      * <p>Se o RabbitMQ estiver fora do ar (ou ocorrer qualquer erro no envio), a proposta
      * fica com {@code integrada = false} e o agendador {@code PropostaSemIntegracao}
      * tenta reenviá-la depois. O erro não é repassado ao cliente.
+     *
+     * <p>O {@code save()} no final faz um UPDATE, gravando no banco o valor de {@code integrada}.
+     *
+     * @param proposta proposta já salva (com {@code id}) que será publicada
      */
     private void notificarRabbitMq(Proposta proposta) {
         try {
