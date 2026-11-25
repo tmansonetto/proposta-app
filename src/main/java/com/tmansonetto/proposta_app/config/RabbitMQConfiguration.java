@@ -73,6 +73,8 @@ public class RabbitMQConfiguration {
                                               JacksonJsonMessageConverter messageConverter) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(messageConverter);
+        // Mensagens que não chegam a nenhuma fila são devolvidas pelo broker (publisher returns)
+        rabbitTemplate.setMandatory(true);
         return rabbitTemplate;
     }
 

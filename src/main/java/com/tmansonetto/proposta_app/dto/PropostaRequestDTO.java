@@ -47,7 +47,7 @@ public class PropostaRequestDTO {
     /** Renda mensal do solicitante, usada na análise de crédito. */
     private Double renda;
     /** Valor de empréstimo que está sendo solicitado. */
-    private Double valorSolicitadoFmt;
+    private Double valorSolicitado;
     /** Prazo de pagamento (quantidade de parcelas/meses). */
     private int prazoPagamento;
 

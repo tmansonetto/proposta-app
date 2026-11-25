@@ -36,11 +36,20 @@ public class PropostaSemIntegracao {
            notificacaoRabbitService.notificar(proposta,exchage);
             atualizarProposta(proposta);
        } catch (RuntimeException e) {
-           logger.error(e.getMessage());
+           logger.error("Falha ao integrar a proposta {}: {}", proposta.getId(), descreverErro(e));
        }
 
         });
     }
+    /** Mensagem do erro seguida da causa raiz, quando houver (ex.: erro de conversão para JSON). */
+    private String descreverErro(RuntimeException e) {
+        Throwable causa = e;
+        while (causa.getCause() != null && causa.getCause() != causa) {
+            causa = causa.getCause();
+        }
+        return causa == e ? e.getMessage() : e.getMessage() + " (causa: " + causa + ")";
+    }
+
     private void atualizarProposta(Proposta proposta) {
         proposta.setIntegrada(true);
         propostaRepository.save(proposta);

@@ -57,7 +57,6 @@ public interface PropostaMapper {
     @Mapping(target = "usuario.cpf", source = "cpf")
     @Mapping(target = "usuario.telefone", source = "telefone")
     @Mapping(target = "usuario.renda", source = "renda")
-    @Mapping(target = "valorSolicitado", source = "valorSolicitadoFmt")
     @Mapping(target = "usuario.id", ignore = true)
     @Mapping(target = "usuario.proposta", ignore = true)
     @Mapping(target = "id", ignore = true)
@@ -72,7 +71,7 @@ public interface PropostaMapper {
      * <p>É o caminho inverso do método anterior: os dados que estão dentro de
      * {@code proposta.usuario} são "achatados" para o nível principal do DTO
      * ({@code source = "usuario.nome"} → {@code target = "nome"}). Os demais campos
-     * de mesmo nome ({@code id}, {@code valorSolicitado}, {@code aprovado}...) são copiados
+     * de mesmo nome ({@code id}, {@code prazoPagamento}, {@code observacao}...) são copiados
      * automaticamente.
      *
      * @param proposta entidade vinda do banco de dados
@@ -83,7 +82,8 @@ public interface PropostaMapper {
     @Mapping(target = "cpf", source = "usuario.cpf")
     @Mapping(target = "telefone", source = "usuario.telefone")
     @Mapping(target = "renda", source = "usuario.renda")
-    @Mapping(target = "valorSolicitado", expression ="java(formatarValorSolicitado(proposta))")
+    @Mapping(target = "valorSolicitadoFmt", expression ="java(formatarValorSolicitado(proposta))")
+    @Mapping(target = "aprovada", source = "aprovado")
     PropostaResponseDTO convertEntityToDto(Proposta proposta);
 
     /**

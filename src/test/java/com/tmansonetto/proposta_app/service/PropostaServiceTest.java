@@ -48,7 +48,7 @@ class PropostaServiceTest {
         dto.setCpf("12345678900");
         dto.setTelefone("11999999999");
         dto.setRenda(5000.0);
-        dto.setValorSolicitadoFmt(10000.0);
+        dto.setValorSolicitado(10000.0);
         dto.setPrazoPagamento(12);
         return dto;
     }

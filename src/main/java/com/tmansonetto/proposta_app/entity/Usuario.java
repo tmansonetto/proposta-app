@@ -1,5 +1,6 @@
 package com.tmansonetto.proposta_app.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,7 +44,11 @@ public class Usuario {
      * é o atributo {@code usuario} da classe {@link Proposta}. Assim, a tabela {@code usuario}
      * NÃO ganha uma coluna extra: a chave estrangeira fica somente em {@code proposta.id_usuario}.
      * Este atributo existe apenas para permitir navegar do usuário até a sua proposta.
+     *
+     * <p>{@code @JsonIgnore} evita a referência circular Proposta → Usuario → Proposta → ...
+     * ao serializar a proposta em JSON para o RabbitMQ.
      */
+    @JsonIgnore
     @OneToOne(mappedBy = "usuario")
     private Proposta proposta;
 

@@ -10,7 +10,7 @@ import lombok.Setter;
  *
  * <p>Representa o JSON que a API devolve ao cliente. Além dos dados enviados na criação
  * (ver {@link PropostaRequestDTO}), contém informações geradas pelo sistema:
- * o {@code id}, o resultado da análise ({@code aprovado}) e uma {@code observacao}.
+ * o {@code id}, o resultado da análise ({@code aprovada}) e uma {@code observacao}.
  *
  * <p>Repare que o campo interno {@code integrada} da entidade {@code Proposta} não aparece aqui:
  * o DTO de saída permite escolher exatamente o que é exposto para fora da aplicação.
@@ -37,11 +37,11 @@ public class PropostaResponseDTO {
     /** Renda mensal do solicitante. */
     private Double renda;
     /** Valor de empréstimo solicitado. */
-    private String valorSolicitado;
+    private String valorSolicitadoFmt;
     /** Prazo de pagamento (quantidade de parcelas/meses). */
     private int prazoPagamento;
     /** Resultado da análise: {@code true} aprovada, {@code false} reprovada, {@code null} ainda não analisada. */
-    private Boolean aprovado;
+    private Boolean aprovada;
     /** Observação/justificativa sobre o resultado da análise. */
     private String observacao;
 }
