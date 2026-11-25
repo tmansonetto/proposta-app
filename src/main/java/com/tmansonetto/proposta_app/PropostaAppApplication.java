@@ -2,6 +2,7 @@ package com.tmansonetto.proposta_app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Classe principal da aplicação (ponto de entrada).
@@ -18,6 +19,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Por isso esta classe fica no pacote "raiz": todos os outros pacotes estão abaixo dela.
  */
 @SpringBootApplication
+@EnableScheduling
 public class PropostaAppApplication {
 
 	/**

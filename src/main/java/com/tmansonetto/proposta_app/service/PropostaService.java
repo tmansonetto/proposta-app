@@ -6,7 +6,6 @@ import com.tmansonetto.proposta_app.entity.Proposta;
 import com.tmansonetto.proposta_app.mapper.PropostaMapper;
 import com.tmansonetto.proposta_app.repository.PropostaRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -38,19 +37,17 @@ public class PropostaService {
     /** Conversor entre DTOs e entidades (implementação gerada pelo MapStruct). */
     private PropostaMapper propostaMapper;
 
-    private NotificacaoSerive notificacaoSerive;
-    private RabbitTemplate rabbitTemplate;
-    
+    /** Publica as propostas no RabbitMQ. */
+    private NotificacaoRabbitService notificacaoRabbitService;
 
     private String exchage;
 
     public PropostaService(PropostaRepository propostaRepository, PropostaMapper propostaMapper,
-                           NotificacaoSerive notificacaoSerive, RabbitTemplate rabbitTemplate,
+                           NotificacaoRabbitService notificacaoRabbitService,
                            @Value("${rabbitmq.propostapendente.exchange}") String exchage) {
         this.propostaRepository = propostaRepository;
         this.propostaMapper = propostaMapper;
-        this.notificacaoSerive = notificacaoSerive;
-        this.rabbitTemplate = rabbitTemplate;
+        this.notificacaoRabbitService = notificacaoRabbitService;
         this.exchage = exchage;
     }
 
@@ -74,21 +71,26 @@ public class PropostaService {
         Proposta proposta = propostaMapper.convertDtoToProposta(propostaRequestDTO);
         propostaRepository.save(proposta);
 
-       // PropostaResponseDTO propostaResponseDTO = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
         notificarRabbitMq(proposta);
-        notificacaoSerive.notificar(proposta,exchage);
 
-      //  return propostaResponseDTO;
-        return PropostaMapper.INSTANCE.convertEntityToDto(proposta);
+        return propostaMapper.convertEntityToDto(proposta);
     }
 
+    /**
+     * Envia a proposta ao RabbitMQ e registra o resultado no campo {@code integrada}.
+     *
+     * <p>Se o RabbitMQ estiver fora do ar (ou ocorrer qualquer erro no envio), a proposta
+     * fica com {@code integrada = false} e o agendador {@code PropostaSemIntegracao}
+     * tenta reenviá-la depois. O erro não é repassado ao cliente.
+     */
     private void notificarRabbitMq(Proposta proposta) {
         try {
-            notificacaoSerive.notificar(proposta, exchage);
-        }catch (RuntimeException e){
+            notificacaoRabbitService.notificar(proposta, exchage);
+            proposta.setIntegrada(true);
+        } catch (RuntimeException e) {
             proposta.setIntegrada(false);
-            propostaRepository.save(proposta);
         }
+        propostaRepository.save(proposta);
     }
 
     /**
