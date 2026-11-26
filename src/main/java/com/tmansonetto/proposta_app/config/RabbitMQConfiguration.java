@@ -38,7 +38,11 @@ public class RabbitMQConfiguration {
 
     /** Nome da exchange de propostas pendentes, lido do {@code application.properties}. */
     @Value("${rabbitmq.propostapendente.exchange}")
-    private String exchage;
+    private String exchagePropostaPendente;
+
+    @Value("${rabbitmq.propostaconcluida.exchange}")
+    private String exchagePropostaConcluida;
+
 
     /**
      * Fila de propostas pendentes consumida pelo microsserviço de análise de crédito.
@@ -110,6 +114,11 @@ public class RabbitMQConfiguration {
         return ExchangeBuilder.fanoutExchange("proposta-pendente.ex").build();
     }
 
+    @Bean
+    public FanoutExchange criarFanoutExchangePropostaConcluida() {
+        return ExchangeBuilder.fanoutExchange("proposta-concluida.ex").build();
+    }
+
     /** Liga a fila da análise de crédito à exchange de propostas pendentes. */
     @Bean
     public Binding criarBindingPropostaPendenteMsAnaliseCredito(){
@@ -120,6 +129,16 @@ public class RabbitMQConfiguration {
     @Bean
     public Binding criarBindingPropostaPendenteMsNotificacao(){
         return BindingBuilder.bind(criarFilaPropostaPendenteMsNotificacao()).to(criarFanoutExchangePropostaPendente());
+    }
+
+    @Bean
+    public Binding criarBindingPropostaConcluidaMsPropostaApp(){
+        return BindingBuilder.bind(criarFilaPropostaConcluidaMsProposta()).to(criarFanoutExchangePropostaConcluida());
+    }
+
+    @Bean
+    public Binding criarBindingPropostaConcluidaMsNotificacao(){
+        return BindingBuilder.bind(criarFilaPropostaConcluidaMsNotificacao()).to(criarFanoutExchangePropostaConcluida());
     }
 
     /**
