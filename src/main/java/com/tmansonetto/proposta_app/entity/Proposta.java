@@ -1,5 +1,6 @@
 package com.tmansonetto.proposta_app.entity;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,6 +47,7 @@ public class Proposta {
     /** Prazo de pagamento (quantidade de parcelas/meses). */
     private int prazoPagamento;
     /** Resultado da análise: {@code true} aprovada, {@code false} reprovada, {@code null} ainda não analisada. */
+    @JsonAlias("aprovada") // o analisecredito devolve o resultado com o nome "aprovada"
     private Boolean aprovado;
     /**
      * Indica se a proposta já foi enviada com sucesso ao RabbitMQ (controle interno).
