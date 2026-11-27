@@ -1,0 +1,19 @@
+package com.tmansonetto.proposta_app.listener;
+
+import com.tmansonetto.proposta_app.entity.Proposta;
+import com.tmansonetto.proposta_app.repository.PropostaRepository;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class PropostaConcluidaListener {
+
+    @Autowired
+    private PropostaRepository propostaRepository;
+
+    @RabbitListener(queues = "${rabbitmq.queue.proposta.concluida}")
+    public void propostaConcluidaMsPropostaConcluida(Proposta proposta) {
+        propostaRepository.save(proposta);
+    }
+}
