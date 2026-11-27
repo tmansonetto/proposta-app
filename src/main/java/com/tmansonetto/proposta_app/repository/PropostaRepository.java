@@ -1,7 +1,11 @@
 package com.tmansonetto.proposta_app.repository;
 
 import com.tmansonetto.proposta_app.entity.Proposta;
+import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,4 +39,15 @@ public interface PropostaRepository extends CrudRepository<Proposta, Long > {
      */
     List<Proposta> findAllByIntegradaIsFalse();
 
+    /**
+     * Atualiza a aprovação e a observação de uma proposta diretamente no banco.
+     *
+     * @param id         identificador da proposta
+     * @param aprovada   resultado da análise de crédito
+     * @param observacao texto explicativo do resultado
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE proposta SET aprovada = :aprovada, observacao = :observacao WHERE id = :id", nativeQuery = true)
+    void atualizarProposta(@Param("id") Long id, @Param("aprovada") boolean aprovada, @Param("observacao") String observacao);
 }

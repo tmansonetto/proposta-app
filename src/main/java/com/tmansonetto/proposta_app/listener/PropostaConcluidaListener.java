@@ -34,4 +34,8 @@ public class PropostaConcluidaListener {
             webSocketService.notificar(propostaResponseDTO);
         }, () -> logger.warn("Proposta {} não encontrada; mensagem de análise ignorada.", propostaAnalisada.getId()));
     }
+
+    private void atualizarProposta(Proposta proposta) {
+        propostaRepository.atualizarProposta(proposta.getId(),proposta.getAprovado(),proposta.getObservacao());
+    }
 }
